@@ -1,3 +1,6 @@
+> ### This repository is for personal environment building. ♲
+
+
 <h1 align="center">
   <a href="https://lexical.dev">Lexical</a>
 </h1>
@@ -386,5 +389,4 @@ Lexical engineers are checking this regularly.
 
 Lexical is [MIT licensed](https://github.com/facebook/lexical/blob/main/LICENSE).
 
-
-> ## このレポジトリは個人的な環境構築用に使用する。 ♲
+^C
