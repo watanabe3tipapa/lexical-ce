@@ -21,9 +21,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: test run the project
-        run: npm run dev
+      - name: Build the project
+        run: npm run build
 
+      - name: Copy static files
+        run: cp -r ./public/* ./dist
+
+      - name: server start
+        run: npm run start
+        
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
