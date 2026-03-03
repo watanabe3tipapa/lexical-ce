@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lexical Editor</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#007bff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Lexical" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          sans-serif;
+        background-color: #f5f5f5;
+      }
+      .toolbar {
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+        padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .toolbar button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .toolbar button:hover {
+        background: #f0f0f0;
+      }
+      .toolbar button.active {
+        background: #007bff;
+        color: #fff;
+        border-color: #007bff;
+      }
+      .editor-container {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-height: 60vh;
+        padding: 20px;
+      }
+      .editor-content {
+        outline: none;
+        min-height: 400px;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+      }
+      .editor-content:focus {
+        border-color: #007bff;
+      }
+      .status-bar {
+        background: #f0f0f0;
+        padding: 8px 15px;
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        justify-content: space-between;
+      }
+      h1 {
+        font-size: 24px;
+        margin: 0 0 20px 0;
+        color: #333;
+      }
+      .info {
+        background: #e7f3ff;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #0066cc;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <button id="btn-bold" title="太字"><b>B</b></button>
+      <button id="btn-italic" title="斜体"><i>I</i></button>
+      <button id="btn-underline" title="下線"><u>U</u></button>
+      <button id="btn-h1" title="見出し1">H1</button>
+      <button id="btn-h2" title="見出し2">H2</button>
+      <button id="btn-ul" title="箇条書き">•</button>
+      <button id="btn-ol" title="番号付き">1.</button>
+    </div>
+
+    <div class="editor-container">
+      <h1>Lexical Editor</h1>
+      <div class="info">📝 シンプルなテキストエディタ - オフライン対応</div>
+      <div id="editor" class="editor-content" contenteditable="true">
+        <p>ここにテキストを入力...</p>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span>✏️ 編集モード</span>
+      <span id="status">準備完了</span>
+    </div>
+
+    <script>
+      // エディタの初期化
+      function initEditor() {
+        const editor = document.getElementById('editor');
+        const status = document.getElementById('status');
+
+        // 太字
+        document.getElementById('btn-bold').addEventListener('click', () => {
+          document.execCommand('bold');
+          editor.focus();
+        });
+
+        // 斜体
+        document.getElementById('btn-italic').addEventListener('click', () => {
+          document.execCommand('italic');
+          editor.focus();
+        });
+
+        // 下線
+        document
+          .getElementById('btn-underline')
+          .addEventListener('click', () => {
+            document.execCommand('underline');
+            editor.focus();
+          });
+
+        // 見出し
+        document.getElementById('btn-h1').addEventListener('click', () => {
+          document.execCommand('formatBlock', false, 'h1');
+          editor.focus();
+        });
+
+        document.getElementById('btn-h2').addEventListener('click', () => {
+          document.execCommand('formatBlock', false, 'h2');
+          editor.focus();
+        });
+
+        // 箇条書き
+        document.getElementById('btn-ul').addEventListener('click', () => {
+          document.execCommand('insertUnorderedList');
+          editor.focus();
+        });
+
+        // 番号付き
+        document.getElementById('btn-ol').addEventListener('click', () => {
+          document.execCommand('insertOrderedList');
+          editor.focus();
+        });
+
+        status.textContent = '✓ エディタ準備完了';
+
+        // 文字数カウント
+        editor.addEventListener('input', () => {
+          const text = editor.innerText || '';
+          status.textContent = `文字数: ${text.length}`;
+        });
+      }
+
+      // Service Worker 登録
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register('service-worker.js')
+            .then((reg) => console.log('SW registered:', reg.scope))
+            .catch((err) => console.log('SW registration failed:', err));
+        });
+      }
+
+      // オフライン検出
+      function updateOnlineStatus() {
+        const status = document.getElementById('status');
+        if (!navigator.onLine) {
+          status.textContent = '📴 オフラインモード';
+        } else {
+          status.textContent += ' | ✓ オンライン';
+        }
+      }
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+
+      // 初期化
+      window.addEventListener('DOMContentLoaded', initEditor);
+    </script>
+  </body>
+</html>
